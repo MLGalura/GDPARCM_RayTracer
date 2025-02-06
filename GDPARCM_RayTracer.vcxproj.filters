@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Base">
+      <UniqueIdentifier>{2b90e764-3e34-4f2f-8d86-72e24e59614e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components">
+      <UniqueIdentifier>{5e29f1d6-a10b-4664-9dde-c243e4d89a65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects">
+      <UniqueIdentifier>{05bd68b8-cda8-4c02-9e65-6b9df282c3aa}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="vec3.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="color.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ray.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="hittable.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Sphere.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="hittable_list.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="rtweekend.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="interval.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="material.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
