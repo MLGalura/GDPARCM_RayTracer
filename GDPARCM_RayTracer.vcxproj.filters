@@ -10,10 +10,19 @@
     <Filter Include="Objects">
       <UniqueIdentifier>{05bd68b8-cda8-4c02-9e65-6b9df282c3aa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Threading">
+      <UniqueIdentifier>{9209211d-fe1d-4058-ba45-31bdf20a904f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{2beec2dc-a069-4799-bf3b-3d943a7cc3e1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Base</Filter>
+    </ClCompile>
+    <ClCompile Include="IETThread.cpp">
+      <Filter>Threading</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -46,6 +55,18 @@
     </ClInclude>
     <ClInclude Include="material.h">
       <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="RayTraceThread.h">
+      <Filter>Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="RTImage.h">
+      <Filter>Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="MathUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="IETThread.h">
+      <Filter>Threading</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

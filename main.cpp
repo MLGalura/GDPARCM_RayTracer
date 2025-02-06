@@ -1,4 +1,5 @@
 #include "rtweekend.h"
+#include <vector>
 
 #include "camera.h"
 #include "hittable.h"
@@ -6,7 +7,74 @@
 #include "material.h"
 #include "sphere.h"
 
+#include "RayTraceThread.h"
+#include "RTImage.h"
+
+#include "opencv2/opencv.hpp"
+#include "Windows.h"
+
+void multiCoreWindowRT(hittable_list world, camera cam, int imageWidth, int raySamplesPerPixel, int bounces, int numCores)
+{
+    const float aspectRatio = 3.0 / 2.0f;
+    const int imageHeight = static_cast<int>(imageWidth, aspectRatio);
+
+    std::vector<RayTraceThread*> rtList;
+
+    const int widthWindow = rint(imageWidth / numCores);
+    const int heightWindow = imageHeight;
+
+    cam.initialize();
+
+    // Number of Cores
+    SYSTEM_INFO sysInfo;
+    GetSystemInfo(&sysInfo);
+    const int logicalCores = sysInfo.dwNumberOfProcessors;
+    const int nThreads = logicalCores * 2;
+
+    const int rowRatio = imageHeight / nThreads + 1;
+
+    for (int i = 0; i < numCores; i++) {
+        RayTraceThread* rtCompute = new RayTraceThread(i, i * rowRatio, (i + 1) * rowRatio);
+        rtCompute->setAttributes(&cam, world, bounces, raySamplesPerPixel, imageWidth, imageHeight);
+
+        rtList.push_back(rtCompute);
+        rtCompute->start();
+    }
+
+
+    for (int i = 0; i < rtList.size(); i++) {
+        if (rtList[i]->isRunning) {
+            i = 0;
+        }
+    }
+
+    std::string renderData = "";
+    for (int i = rtList.size() - 1; i >= 0; i--) {
+        renderData.append(rtList[i]->data);
+    }
+
+    std::cout << "P3\n" << imageWidth << " " << imageHeight << "\n255\n";
+    std::cout << renderData;
+
+    cv::Mat ppmImage = cv::imread("C:/Users/Marc Galura/source/repos/GDPARCM_RayTracer/x64/Debug/image.ppm", cv::IMREAD_UNCHANGED);
+
+    if (ppmImage.empty())
+        std::cerr << "Can't open or find the image." << std::endl;
+    
+    else {
+        cv::imwrite("finalImage.png", ppmImage);
+        cv::imshow("Sample", ppmImage);
+    }
+}
+
 int main() {
+    const float aspectRatio = 3.0f / 2.0f;
+    const int imgWidth = 1440;
+    const int imgHeight = static_cast<int>(imgWidth / aspectRatio);
+    const int raySamplesPerPixel = 50;
+    const int bounces = 25;
+    const int numCores = 24;
+
     hittable_list world;
 
     auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
@@ -70,41 +138,6 @@ int main() {
     cam.defocus_angle = 0.6;
     cam.focus_dist = 10.0;
 
-    cam.render(world);
+    multiCoreWindowRT(world, cam, imgWidth, raySamplesPerPixel, bounces, numCores);
+    //cam.render(world);
 }
-
-/*
-int main() {
-    hittable_list world;
-
-    auto material_ground = make_shared<lambertian>(color(0.8, 0.8, 0.0));
-    auto material_center = make_shared<lambertian>(color(0.1, 0.2, 0.5));
-    auto material_left = make_shared<dielectric>(1.50);
-    auto material_bubble = make_shared<dielectric>(1.00 / 1.50);
-    auto material_right = make_shared<metal>(color(0.8, 0.6, 0.2), 1.0);
-
-    world.add(make_shared<sphere>(point3(0.0, -100.5, -1.0), 100.0, material_ground));
-    world.add(make_shared<sphere>(point3(0.0, 0.0, -1.2), 0.5, material_center));
-    world.add(make_shared<sphere>(point3(-1.0, 0.0, -1.0), 0.5, material_left));
-    world.add(make_shared<sphere>(point3(-1.0, 0.0, -1.0), 0.4, material_bubble));
-    world.add(make_shared<sphere>(point3(1.0, 0.0, -1.0), 0.5, material_right));
-
-    camera cam;
-
-    cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 400;
-    cam.samples_per_pixel = 100;
-    cam.max_depth = 50;
-
-
-    cam.vfov = 20;
-    cam.lookfrom = point3(-2, 2, 1);
-    cam.lookat = point3(0, 0, -1);
-    cam.vup = vec3(0, 1, 0);
-
-    cam.defocus_angle = 10.0;
-    cam.focus_dist = 3.4;
-
-    cam.render(world);
-}
-*/

@@ -17,7 +17,7 @@ public:
     vec3   vup = vec3(0, 1, 0);     // Camera-relative "up" direction
 
     double defocus_angle = 0;  // Variation angle of rays through each pixel
-    double focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus
+    double focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus 
 
 
     void render(const hittable& world) {
@@ -51,6 +51,7 @@ private:
     vec3   defocus_disk_u;       // Defocus disk horizontal radius
     vec3   defocus_disk_v;       // Defocus disk vertical radius
 
+public:
     void initialize() {
         image_height = int(image_width / aspect_ratio);
         image_height = (image_height < 1) ? 1 : image_height;
