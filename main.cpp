@@ -6,18 +6,23 @@
 #include "material.h"
 #include "sphere.h"
 
+#include "ThreadPool.h"
+#include "opencv2/opencv.hpp"
+
 int main() {
     hittable_list world;
 
     auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
     world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, ground_material));
      
-    for (int a = -11; a < 11; a++) { 
-        for (int b = -11; b < 11; b++) { 
-            auto choose_mat = random_double(); 
-            point3 center(a + 0.9 * random_double(), 0.2, b + 0.9 * random_double()); 
+    int ballcount = 0;
 
-            if ((center - point3(4, 0.2, 0)).length() > 0.9) { 
+    for (int a = -10; a < 7; a++) { 
+        for (int b = -3; b < 3; b++) { 
+            auto choose_mat = random_double(); 
+            point3 center(a + 0.3 * random_double(), 0.2, b + 0.3 * random_double());
+
+            if ((center - point3(4, 0.2, 0)).length() > 0.4) { 
                 shared_ptr<material> sphere_material; 
 
                 if (choose_mat < 0.8) { 
@@ -35,31 +40,34 @@ int main() {
                 }
                 else {
                     // glass
-                    sphere_material = make_shared<dielectric>(1.5); 
+                    sphere_material = make_shared<dielectric>(1.5);
                     world.add(make_shared<sphere>(center, 0.2, sphere_material)); 
                 }
+
+                ballcount++;
+                std::cout << "ball count: " << ballcount << std::endl;
             }
         }
     }
     
 
     auto material1 = make_shared<dielectric>(1.00 / 1.50);
-    world.add(make_shared<sphere>(point3(0, 1, 0), 1.0, material1));
-
     auto material2 = make_shared<lambertian>(color(0.1, 0.4, 0.1));
-    world.add(make_shared<sphere>(point3(-4, 1, 0), 1.0, material2));
-
     auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
-    world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
-
     auto material4 = make_shared<lambertian>(color(0.8, 0.1, 0.1));
+
+    world.add(make_shared<sphere>(point3(0, 1, 0), 1.0, material1));
+    world.add(make_shared<sphere>(point3(-4, 1, 0), 1.0, material2));
+    world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
     world.add(make_shared<sphere>(point3(-8, 1, 0), 1.0, material4));
+
+
 
     camera cam;
 
     cam.aspect_ratio = 1; //16.0 / 9.0;
-    cam.image_width = 512;
-    cam.samples_per_pixel = 500;
+    cam.image_width = 1080;
+    cam.samples_per_pixel = 200;
     cam.max_depth = 50;
 
     cam.vfov = 20;
@@ -67,44 +75,50 @@ int main() {
     cam.lookat = point3(0, 0, 0);
     cam.vup = vec3(0, 1, 0);
 
-    cam.defocus_angle = 0.6;
-    cam.focus_dist = 10.0;
+    cam.defocus_angle = 1.6;
+    cam.focus_dist = 4.0;
 
-    cam.render(world);
+
+    ThreadPool threadPool("RenderPool", std::thread::hardware_concurrency());
+    threadPool.startScheduler();
+
+    cam.render(world, &threadPool);
+
+    threadPool.stopScheduler();
+    return 0;
+
+    /* TESTER TO CHECK OPENCV
+    int width = 256, height = 256;
+
+    // Create an OpenCV Mat filled with a gradient
+    cv::Mat image(height, width, CV_8UC3);
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            image.at<cv::Vec3b>(y, x) = cv::Vec3b(x % 256, y % 256, 128);
+        }
+    }
+
+    // Save as a PPM file
+    std::ofstream outFile("test_output.ppm");
+    if (!outFile) {
+        std::cerr << "Error: Could not create the file!" << std::endl;
+        return -1;
+    }
+
+    // Write PPM header
+    outFile << "P3\n" << width << " " << height << "\n255\n";
+
+    // Write pixel data
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            cv::Vec3b color = image.at<cv::Vec3b>(y, x);
+            outFile << (int)color[2] << " " << (int)color[1] << " " << (int)color[0] << "\n";
+        }
+    }
+
+    outFile.close();
+    std::cout << "PPM file created: test_output.ppm" << std::endl;
+
+    return 0;
+    */
 }
-
-/*
-int main() {
-    hittable_list world;
-
-    auto material_ground = make_shared<lambertian>(color(0.8, 0.8, 0.0));
-    auto material_center = make_shared<lambertian>(color(0.1, 0.2, 0.5));
-    auto material_left = make_shared<dielectric>(1.50);
-    auto material_bubble = make_shared<dielectric>(1.00 / 1.50);
-    auto material_right = make_shared<metal>(color(0.8, 0.6, 0.2), 1.0);
-
-    world.add(make_shared<sphere>(point3(0.0, -100.5, -1.0), 100.0, material_ground));
-    world.add(make_shared<sphere>(point3(0.0, 0.0, -1.2), 0.5, material_center));
-    world.add(make_shared<sphere>(point3(-1.0, 0.0, -1.0), 0.5, material_left));
-    world.add(make_shared<sphere>(point3(-1.0, 0.0, -1.0), 0.4, material_bubble));
-    world.add(make_shared<sphere>(point3(1.0, 0.0, -1.0), 0.5, material_right));
-
-    camera cam;
-
-    cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 400;
-    cam.samples_per_pixel = 100;
-    cam.max_depth = 50;
-
-
-    cam.vfov = 20;
-    cam.lookfrom = point3(-2, 2, 1);
-    cam.lookat = point3(0, 0, -1);
-    cam.vup = vec3(0, 1, 0);
-
-    cam.defocus_angle = 10.0;
-    cam.focus_dist = 3.4;
-
-    cam.render(world);
-}
-*/

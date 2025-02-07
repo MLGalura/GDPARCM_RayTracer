@@ -2,7 +2,13 @@
 
 #include "hittable.h"
 #include "material.h"
+#include "ThreadPool.h"
 #include <cmath>
+
+#include "ScanlineRenderer.h"
+#include "RenderTracker.h"
+#include "opencv2/opencv.hpp"
+ 
 
 class camera {
 public:
@@ -10,7 +16,7 @@ public:
     int    image_width = 100;  // Rendered image width in pixel count
     int    samples_per_pixel = 10;   // Count of random samples for each pixel
     int    max_depth = 10;   // Maximum number of ray bounces into scene
-
+    
     double vfov = 90;  // Vertical view angle (field of view)
     point3 lookfrom = point3(0, 0, 0);   // Point camera is looking from
     point3 lookat = point3(0, 0, -1);  // Point camera is looking at
@@ -20,10 +26,23 @@ public:
     double focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus
 
 
-    void render(const hittable& world) {
+    void render(const hittable& world, ThreadPool* threadPool) {
         initialize();
 
-        std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+        cv::Mat image_buffer(image_height, image_width, CV_32FC3, cv::Scalar(0.0f, 0.0f, 0.0f));
+
+        RenderTracker* tracker = new RenderTracker(image_height, image_buffer, image_width, image_height, samples_per_pixel);
+
+        for (int j = 0; j < image_height; j++) {
+            ScanlineRenderer* task = new ScanlineRenderer(*this, j, image_width, samples_per_pixel, world, image_buffer, tracker);
+            threadPool->scheduleTask(task);
+        }
+
+        while (!tracker->isDone()) 
+            std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
+
+        delete tracker;
+        /*std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
         for (int j = 0; j < image_height; j++) {
             std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
@@ -37,7 +56,7 @@ public:
             }
         }
 
-        std::clog << "\rDone.                 \n";
+        std::clog << "\rDone.                 \n";*/
     }
 
 private:
@@ -51,6 +70,7 @@ private:
     vec3   defocus_disk_u;       // Defocus disk horizontal radius
     vec3   defocus_disk_v;       // Defocus disk vertical radius
 
+public:
     void initialize() {
         image_height = int(image_width / aspect_ratio);
         image_height = (image_height < 1) ? 1 : image_height;

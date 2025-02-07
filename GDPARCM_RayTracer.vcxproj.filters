@@ -10,11 +10,27 @@
     <Filter Include="Objects">
       <UniqueIdentifier>{05bd68b8-cda8-4c02-9e65-6b9df282c3aa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Threading">
+      <UniqueIdentifier>{41b82474-4e39-4ff0-ab12-eb2ecef884b5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Base</Filter>
     </ClCompile>
+    <ClCompile Include="IETThread.cpp">
+      <Filter>Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="RayTraceThread.cpp">
+      <Filter>Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="ScanlineRenderer.cpp">
+      <Filter>Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadPool.cpp">
+      <Filter>Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderTracker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vec3.h">
@@ -47,5 +63,24 @@
     <ClInclude Include="material.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="IETThread.h">
+      <Filter>Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="IExecutionEvent.h">
+      <Filter>Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="IWorkerAction.h">
+      <Filter>Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="RayTraceThread.h">
+      <Filter>Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="ScanlineRenderer.h">
+      <Filter>Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadPool.h">
+      <Filter>Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderTracker.h" />
   </ItemGroup>
 </Project>
